@@ -12,6 +12,7 @@
 
 # And these directories
 !.zprezto/*
+!.zprezto
 !.pyenv/shims/*
 !.oh-my-zsh.old/*
 
