@@ -1,0 +1,19 @@
+# Ignore everything
+*
+
+# But not these files...
+!.gitignore
+!.bash_profile
+!.pyenv/version
+!.zpreztorc
+!.zprofile
+!.zshenv
+!.zshrc
+
+# And these directories
+!.zprezto/*
+!.pyenv/shims/*
+!.oh-my-zsh.old/*
+
+# ...even if they are in subdirectories
+# !*/
