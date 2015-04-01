@@ -10,6 +10,10 @@ if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
 fi
 
+
+# Prompt configuration ====================================================={{{1
+
+
 # Customize to your needs...
 
 # why would you type 'cd dir' if you could just type 'dir'?
