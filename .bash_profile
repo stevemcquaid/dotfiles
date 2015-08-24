@@ -22,12 +22,32 @@ alias screenup='screen -d -m -S shared'
 alias screenattach='screen -x shared'
 
 els() {
-    cd /Users/smcquaid/Dropbox/Code/Openstack/els-smdb-client
+    cd $HOME/Dropbox/Code/Openstack/els-wafflehaus
+    rm -rf .venv/
     venvgo
+    pip install --ignore-installed /Users/smcquaid/Dropbox/Code/Openstack/els-smdb-client
+}
+
+waffletest() {
+    ./scripts/run_tests.sh -testscript integration/nova_requests_validation_tests.py -testclass NovaRequestsValidationTests -env DEV
 }
 
 vox() {
     tox -- -s
+}
+
+gddy() {
+    curl -s "http://dev.markitondemand.com/Api/v2/Quote?symbol=GDDY&callback=stock" | sed -e 's,.*<LastPrice>\([^<]*\)</LastPrice>.*,\1,g'
+}
+
+stock() {
+    curl -s "http://dev.markitondemand.com/Api/v2/Quote?symbol=$1&callback=stock" | sed -e 's,.*<LastPrice>\([^<]*\)</LastPrice>.*,\1,g'
+
+}
+
+new() {
+    touch ~/Desktop/Text\ Files/"$*".txt
+    subl ~/Desktop/Text\ Files/"$*".txt
 }
 
 #Venv Shortcuts
@@ -38,7 +58,7 @@ venvgo () {
         cat .python-version
     fi
     # Create virtualenv
-    virtualenv .venv
+    virtualenv --no-site-packages .venv
     # Activate virtualenv
     source .venv/bin/activate
     # Re-init requirements
@@ -59,13 +79,14 @@ venvgo () {
     then
         rm -rf .tox
     fi
+    #pip install --ignore-installed /Users/smcquaid/Dropbox/Code/Openstack/els-common-smcquaid
 }
 
 sourceopenstackrc () {
     source /Users/smcquaid/.openstack/dev-smcquaid-openrc.sh
 }
 
-catbashprofile () {
+catbash () {
     cat /Users/smcquaid/.bash_profile
 }
 
@@ -145,8 +166,8 @@ export EDITOR="subl -w"
 #pyenv
 eval "$(pyenv init -)"
 
-#DOCKER STUFF
-export DOCKER_HOST=tcp://localhost:2375
+# DOCKER STUFF
+# export DOCKER_HOST=tcp://localhost:2375
 
 #export path
 export PATH="/usr/local:/usr/local/bin:$PATH"
@@ -196,3 +217,44 @@ extract () {
 MYSQL=/usr/local/mysql/bin
 export PATH=$PATH:$MYSQL
 export DYLD_LIBRARY_PATH=/usr/local/mysql/lib:$DYLD_LIBRARY_PATH
+
+dockergo() {
+    VM=default
+    DOCKER_MACHINE=/usr/local/bin/docker-machine
+    VBOXMANAGE=/Applications/VirtualBox.app/Contents/MacOS/VBoxManage
+
+    BLUE='\033[0;34m'
+    GREEN='\033[0;32m'
+    NC='\033[0m'
+
+    unset DYLD_LIBRARY_PATH
+    unset LD_LIBRARY_PATH
+
+    if [ ! -f $DOCKER_MACHINE ] || [ ! -f $VBOXMANAGE ]; then
+      echo "Either VirtualBox or Docker Machine are not installed. Please re-run the Toolbox Installer and try again."
+      exit 1
+    fi
+
+    $VBOXMANAGE showvminfo $VM &> /dev/null
+    VM_EXISTS_CODE=$?
+
+    if [ $VM_EXISTS_CODE -eq 1 ]; then
+      echo "Creating Machine $VM..."
+      $DOCKER_MACHINE rm -f $VM &> /dev/null
+      rm -rf ~/.docker/machine/machines/$VM
+      $DOCKER_MACHINE -D create -d virtualbox --virtualbox-memory 2048 $VM
+    else
+      echo "Machine $VM already exists in VirtualBox."
+    fi
+
+    echo "Starting machine $VM..."
+    $DOCKER_MACHINE start $VM
+
+    echo "Setting environment variables for machine $VM..."
+
+    echo -e "${BLUE}docker${NC} is configured to use the ${GREEN}$VM${NC} machine with IP ${GREEN}$($DOCKER_MACHINE ip $VM)${NC}"
+    echo "For help getting started, check out the docs at https://docs.docker.com"
+    echo
+
+    eval $($DOCKER_MACHINE env $VM)
+}
